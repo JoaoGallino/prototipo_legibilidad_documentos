@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <!-- ========================================= -->
+    <!-- CONFIGURACIÓN DE LA PÁGINA -->
+    <!-- ========================================= -->
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Clasificador de Legibilidad
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+<body>
+
+<!-- ========================================= -->
+<!-- BARRA DE NAVEGACIÓN -->
+<!-- ========================================= -->
+
+<nav class="navbar">
+
+    <div class="navbar-title">
+        Plataforma de Legibilidad
+    </div>
+
+    <div class="navbar-user">
+
+        <span>
+            {{ session['usuario'] }}
+        </span>
+
+        <a href="{{ url_for('logout') }}" class="logout-btn">
+            Cerrar sesión
+        </a>
+
+    </div>
+
+</nav>
+
+<!-- ========================================= -->
+<!-- CONTENEDOR PRINCIPAL -->
+<!-- ========================================= -->
+
+<div class="container">
+
+    <div class="logo">
+        📄
+    </div>
+
+    <h1>
+        Clasificador Inteligente de Legibilidad
+    </h1>
+
+    <p class="subtitle">
+        Sistema experimental para análisis automático de documentos
+    </p>
+
+    <!-- ========================================= -->
+    <!-- FORMULARIO DE CARGA -->
+    <!-- ========================================= -->
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+        id="upload-form">
+
+        <label for="imagen" class="drop-zone">
+
+            <span id="drop-text">
+
+                Arrastra uno o varios documentos
+                (PDF o imágenes) o haz clic para seleccionarlos
+
+            </span>
+
+            <input
+                type="file"
+                id="imagen"
+                name="imagenes"
+                multiple
+                accept=".pdf,.jpg,.jpeg,.png"
+                required
+                hidden>
+
+        </label>
+
+        <button type="submit">
+            Analizar documentos
+        </button>
+
+        <a
+            href="{{ url_for('limpiar') }}"
+            class="btn-limpiar">
+
+            Limpiar
+
+        </a>
+
+    </form>
+
+    <!-- ========================================= -->
+    <!-- ANIMACIÓN DE CARGA -->
+    <!-- ========================================= -->
+
+    <div
+        class="loading-container"
+        id="loading-container">
+
+        <div class="loader"></div>
+
+        <p>
+            Analizando documentos...
+        </p>
+
+    </div>
+
+    <!-- ========================================= -->
+    <!-- TARJETAS DE ESTADÍSTICAS -->
+    <!-- ========================================= -->
+
+    <div class="cards">
+
+        <div class="card">
+
+            <h3>Total</h3>
+
+            <span>
+                {{ resultados|length }}
+            </span>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Legibles</h3>
+
+            <span>
+                {{ total_legibles }}
+            </span>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Parciales</h3>
+
+            <span>
+                {{ total_parciales }}
+            </span>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Ilegibles</h3>
+
+            <span>
+                {{ total_ilegibles }}
+            </span>
+
+        </div>
+
+    </div>
+
+    <!-- ========================================= -->
+    <!-- TABLA DE RESULTADOS -->
+    <!-- ========================================= -->
+
+    <table class="tabla">
+
+        <thead>
+
+            <tr>
+
+                <th>Documento</th>
+
+                <th>Clasificación</th>
+
+                <th>Confianza</th>
+
+                <th>Vista previa</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+        {% for doc in resultados %}
+
+            <!-- Documento -->
+
+            <tr>
+
+                <td>
+
+                    {{ doc.nombre }}
+
+                </td>
+
+                <td>
+
+                    <span class="{{ doc.color }}">
+
+                        {{ doc.resultado }}
+
+                    </span>
+
+                </td>
+
+                <td>
+
+                    {{ doc.confianza }}%
+
+                </td>
+
+                <td>
+
+                    <img
+                        src="{{ doc.imagen }}"
+                        class="miniatura">
+
+                    {% if doc.detalle %}
+
+                    <br><br>
+
+                    <button
+                        type="button"
+                        class="btn-detalle"
+                        onclick="mostrarDetalle('{{ loop.index }}')">
+
+                        Ver páginas
+
+                    </button>
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            <!-- Detalle del PDF -->
+
+            {% if doc.detalle %}
+
+            <tr
+                id="detalle{{ loop.index }}"
+                class="fila-detalle"
+                style="display:none;">
+
+                <td colspan="4">
+
+                    <h3>
+                        Detalle del documento
+                    </h3>
+
+                    <table class="tabla-detalle">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Página</th>
+
+                                <th>Clasificación</th>
+
+                                <th>Confianza</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                        {% for pagina in doc.detalle %}
+
+                            <tr>
+
+                                <td>
+
+                                    {{ pagina.pagina }}
+
+                                </td>
+
+                                <td>
+
+                                    {{ pagina.resultado }}
+
+                                </td>
+
+                                <td>
+
+                                    {{ pagina.confianza }}%
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </td>
+
+            </tr>
+
+            {% endif %}
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<!-- ========================================= -->
+<!-- JAVASCRIPT -->
+<!-- ========================================= -->
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+
+</html>

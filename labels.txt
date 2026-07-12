@@ -1,0 +1,3 @@
+0 Legible
+1 Parcial
+2 Ilegible

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <!-- =======================================================
+         CONFIGURACIÓN DE LA PÁGINA
+    ======================================================== -->
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Iniciar sesión
+    </title>
+
+    <!-- Hoja de estilos -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+<body>
+
+    <!-- =======================================================
+         CONTENEDOR PRINCIPAL DEL LOGIN
+    ======================================================== -->
+
+    <div class="login-container">
+
+        <!-- Tarjeta del formulario -->
+
+        <div class="login-card">
+
+            <!-- Logo -->
+
+            <div class="login-logo">
+                📄
+            </div>
+
+            <!-- Título -->
+
+            <h1>
+                Plataforma de Validación de Legibilidad
+            </h1>
+
+            <!-- Subtítulo -->
+
+            <p class="login-subtitle">
+                Acceso al sistema
+            </p>
+
+            <!-- =======================================================
+                 MENSAJE DE ERROR
+            ======================================================== -->
+
+            {% if error %}
+
+                <div class="error">
+
+                    {{ error }}
+
+                </div>
+
+            {% endif %}
+
+            <!-- =======================================================
+                 FORMULARIO DE INICIO DE SESIÓN
+            ======================================================== -->
+
+            <form method="POST">
+
+                <!-- Usuario -->
+
+                <input
+                    type="text"
+                    name="usuario"
+                    placeholder="Usuario"
+                    required
+                >
+
+                <!-- Contraseña -->
+
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Contraseña"
+                    required
+                >
+
+                <!-- Botón -->
+
+                <button type="submit">
+
+                    Ingresar
+
+                </button>
+
+            </form>
+
+            <!-- =======================================================
+                 INFORMACIÓN DEL PROTOTIPO
+            ======================================================== -->
+
+            <p class="login-footer">
+
+                Prototipo experimental para la validación automática de la
+                legibilidad de documentos escaneados mediante aprendizaje
+                automático.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

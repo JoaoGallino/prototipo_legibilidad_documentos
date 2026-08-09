@@ -1,1 +1,225 @@
+<!DOCTYPE html>
 
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>
+    Evaluación del Modelo
+</title>
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='style.css') }}"
+>
+
+
+</head>
+
+<body>
+
+
+<div class="container">
+
+    <!-- ==========================
+         TÍTULO
+    ========================== -->
+
+    <h1>
+        📊 Evaluación del Modelo
+    </h1>
+
+    <p class="subtitle">
+        Resultados obtenidos a partir del conjunto de prueba
+    </p>
+
+    {% if not precision %}
+
+    <div class="mensaje-vacio">
+
+        No existe una evaluación realizada.
+
+    </div>
+
+    {% endif %}
+
+    {% if precision %}
+
+    <!-- ==========================
+         TARJETAS DE RESUMEN
+    ========================== -->
+
+    <div class="cards-evaluacion">
+
+        <div class="card-evaluacion">
+            <h3>Total</h3>
+            <span>{{ total }}</span>
+        </div>
+
+        <div class="card-evaluacion">
+            <h3>Aciertos</h3>
+            <span>{{ correctos }}</span>
+        </div>
+
+        <div class="card-evaluacion">
+            <h3>Errores</h3>
+            <span>{{ incorrectos }}</span>
+        </div>
+
+        <div class="card-evaluacion precision-card">
+            <h3>Precisión</h3>
+            <span>{{ precision }}%</span>
+        </div>
+
+    </div>
+
+    <!-- ==========================
+         BARRA DE PRECISIÓN
+    ========================== -->
+
+    <h2>
+        Rendimiento del Modelo
+    </h2>
+
+    <div class="barra-precision">
+
+        <div
+            class="barra-valor"
+            style="width: {{ precision }}%;">
+
+            {{ precision }}%
+
+        </div>
+
+    </div>
+
+    <!-- ==========================
+         MATRIZ DE CONFUSIÓN
+    ========================== -->
+
+    <h2>
+        Matriz de Confusión
+    </h2>
+
+    <table class="matriz">
+
+        <tr>
+            <th>Real / Predicho</th>
+            <th>Legible</th>
+            <th>Parcial</th>
+            <th>Ilegible</th>
+        </tr>
+
+        <tr>
+            <td>Legible</td>
+            <td>{{ matriz[0][0] }}</td>
+            <td>{{ matriz[0][1] }}</td>
+            <td>{{ matriz[0][2] }}</td>
+        </tr>
+
+        <tr>
+            <td>Parcial</td>
+            <td>{{ matriz[1][0] }}</td>
+            <td>{{ matriz[1][1] }}</td>
+            <td>{{ matriz[1][2] }}</td>
+        </tr>
+
+        <tr>
+            <td>Ilegible</td>
+            <td>{{ matriz[2][0] }}</td>
+            <td>{{ matriz[2][1] }}</td>
+            <td>{{ matriz[2][2] }}</td>
+        </tr>
+
+    </table>
+
+
+    <!-- ==========================
+         DETALLE DE DOCUMENTOS
+    ========================== -->
+
+    <h2>
+        Detalle de Resultados
+    </h2>
+
+    <table class="tabla">
+
+        <thead>
+
+            <tr>
+
+                <th>Documento</th>
+
+                <th>Clase Real</th>
+
+                <th>Predicción</th>
+
+                <th>Confianza</th>
+
+                <th>Correcto</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for fila in detalles %}
+
+            <tr>
+
+                <td>{{ fila.archivo }}</td>
+
+                <td>{{ fila.real }}</td>
+
+                <td>{{ fila.prediccion }}</td>
+
+                <td>{{ fila.confianza }}%</td>
+
+                <td>{{ fila.correcto }}</td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% endif %}
+
+    <br>
+
+    <a 
+        href="{{ url_for('evaluar') }}" 
+        class="btn-evaluar">
+    
+        Evaluar Modelo
+
+    </a>
+
+    <a 
+        href="{{ url_for('limpiar_evaluacion') }}" 
+        class="btn-limpiar">
+
+        Limpiar Evaluación
+
+    </a>
+
+        <a
+        href="{{ url_for('index') }}"
+        class="btn-volver">
+
+        Volver al Inicio
+
+    </a>
+
+</div>
+
+</body>
+
+</html>

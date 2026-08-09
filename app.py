@@ -6,11 +6,16 @@ from flask import (
     url_for,
     session
 )
+
 from tensorflow.keras.models import load_model
 from PIL import Image
 from pdf2image import convert_from_path
 
-import shutil  
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix
+)
+
 import numpy as np
 import os
 
@@ -80,6 +85,185 @@ def predecir(data):
 
     return resultado, round(float(confidence_score) * 100, 2)
 
+def evaluar_modelo():
+
+    ruta_test = "test_dataset"
+
+    reales = []
+    predichos = []
+    detalles = []
+
+    clases = [
+        "legible",
+        "parcial",
+        "ilegible"
+    ]
+
+    for clase_real in clases:
+
+        carpeta = os.path.join(
+            ruta_test,
+            clase_real
+        )
+
+        if not os.path.exists(carpeta):
+            print(f"Carpeta no encontrada: {carpeta}")
+            continue
+
+        for archivo in os.listdir(carpeta):
+
+            ruta = os.path.join(
+                carpeta,
+                archivo
+            )
+
+            try:
+
+                # ==========================
+                # PDF
+                # ==========================
+
+                if archivo.lower().endswith(".pdf"):
+
+                    paginas = convert_from_path(ruta)
+
+                    resultados_paginas = []
+
+                    confianzas_paginas = []
+
+                    for pagina in paginas:
+
+                        data = preparar_imagen(pagina)
+
+                        resultado_pagina, confianza_pagina = predecir(data)
+
+                        resultados_paginas.append(
+                            resultado_pagina
+                        )
+
+                        confianzas_paginas.append(
+                            confianza_pagina
+                        )
+
+                    if "Ilegible" in resultados_paginas:
+
+                        prediccion = "Ilegible"
+
+                    elif "Parcialmente legible" in resultados_paginas:
+
+                        prediccion = "Parcialmente legible"
+
+                    else:
+
+                        prediccion = "Legible"
+
+                    confianza = round(
+                        sum(confianzas_paginas) /
+                        len(confianzas_paginas),
+                        2
+                    )
+
+                # ==========================
+                # IMAGEN
+                # ==========================
+
+                else:
+
+                    imagen = Image.open(ruta)
+
+                    data = preparar_imagen(imagen)
+
+                    prediccion, confianza = predecir(data)
+
+                # ==========================
+                # NORMALIZAR RESULTADOS
+                # ==========================
+
+                if prediccion == "Legible":
+
+                    predicho = "legible"
+
+                elif prediccion == "Parcialmente legible":
+
+                    predicho = "parcial"
+
+                else:
+
+                    predicho = "ilegible"
+
+                reales.append(clase_real)
+
+                predichos.append(predicho)
+
+                detalles.append({
+
+                    "archivo": archivo,
+
+                    "real": clase_real,
+
+                    "prediccion": prediccion,
+
+                    "confianza": confianza,
+
+                    "correcto":
+                        "Sí"
+                        if clase_real == predicho
+                        else "No"
+
+                })
+
+            except Exception as e:
+
+                print(
+                    f"Error procesando {archivo}: {e}"
+                )
+
+    precision = round(
+
+        accuracy_score(
+            reales,
+            predichos
+        ) * 100,
+
+        2
+
+    )
+
+    matriz = confusion_matrix(
+
+        reales,
+
+        predichos,
+
+        labels=clases
+
+    ).tolist()
+
+    total = len(reales)
+
+    correctos = sum(
+        1
+        for r, p in zip(reales, predichos)
+        if r == p
+    )
+
+    incorrectos = total - correctos
+
+    return (
+
+        precision,
+
+        matriz,
+
+        detalles,
+
+        total,
+
+        correctos,
+
+        incorrectos
+
+    )
 
 # ==========================
 # LOGIN
@@ -138,6 +322,8 @@ def limpiar():
 
                 os.remove(ruta)
 
+    session.pop("resultados", None)
+
     return redirect(url_for("index"))
 
 
@@ -152,7 +338,7 @@ def index():
 
         return redirect(url_for("login"))
 
-    resultados = []
+    resultados = session.get("resultados", [])
 
     total_legibles = 0
     total_parciales = 0
@@ -163,6 +349,7 @@ def index():
         archivos = request.files.getlist("imagenes")
 
         for archivo in archivos:
+            
 
             if archivo.filename == "":
                 continue
@@ -282,6 +469,9 @@ def index():
 
                 "detalle": detalle_paginas if extension.endswith(".pdf") else None
             })
+
+    # Guardar resultados en sesión
+    session["resultados"] = resultados
     
     total_legibles = sum(
     1 for doc in resultados
@@ -306,6 +496,47 @@ def index():
         total_legibles=total_legibles,
         total_parciales=total_parciales,
         total_ilegibles=total_ilegibles
+    )
+
+@app.route("/evaluar")
+def evaluar():
+
+    precision, matriz, detalles, total, correctos, incorrectos = evaluar_modelo()
+
+    return render_template(
+        "evaluar.html",
+        precision=precision,
+        matriz=matriz,
+        detalles=detalles,
+        total=total,
+        correctos=correctos,
+        incorrectos=incorrectos
+    )
+
+@app.route("/limpiar_evaluacion")
+def limpiar_evaluacion():
+
+    return render_template(
+        "evaluar.html",
+        precision=None,
+        matriz=None,
+        detalles=[],
+        total=0,
+        correctos=0,
+        incorrectos=0
+    )
+
+@app.route("/pagina_evaluacion")
+def pagina_evaluacion():
+
+    return render_template(
+        "evaluar.html",
+        precision=None,
+        matriz=None,
+        detalles=[],
+        total=0,
+        correctos=0,
+        incorrectos=0
     )
 
 if __name__ == "__main__":

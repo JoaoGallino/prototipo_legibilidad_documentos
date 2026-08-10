@@ -967,3 +967,18 @@ button:hover {
     background: #16a34a;
 
 }
+
+
+/* ==========================
+   DRAG & DROP ACTIVO
+========================== */
+
+.drag-active {
+
+    border-color: #22c55e !important;
+
+    background: rgba(34, 197, 94, 0.15);
+
+    transform: scale(1.02);
+
+}

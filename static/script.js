@@ -55,3 +55,57 @@ function mostrarDetalle(id) {
     }
 
 }
+
+
+// ==========================
+// DRAG & DROP
+// ==========================
+
+const dropZone = document.querySelector(".drop-zone");
+const fileInput = document.getElementById("imagen");
+const dropText = document.getElementById("drop-text");
+
+dropZone.addEventListener("dragover", (e) => {
+
+    e.preventDefault();
+
+    dropZone.classList.add("drag-active");
+
+    dropText.textContent = "Suelta los archivos aquí";
+
+});
+
+dropZone.addEventListener("dragleave", () => {
+
+    dropZone.classList.remove("drag-active");
+
+    dropText.textContent =
+        "Arrastra uno o varios documentos (PDF o imágenes) o haz clic para seleccionarlos";
+
+});
+
+dropZone.addEventListener("drop", (e) => {
+
+    e.preventDefault();
+
+    dropZone.classList.remove("drag-active");
+
+    fileInput.files = e.dataTransfer.files;
+
+    dropText.textContent =
+        e.dataTransfer.files.length +
+        " archivo(s) seleccionado(s)";
+
+});
+
+fileInput.addEventListener("change", () => {
+
+    if(fileInput.files.length > 0){
+
+        dropText.textContent =
+            fileInput.files.length +
+            " archivo(s) seleccionado(s)";
+
+    }
+
+});
